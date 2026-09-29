@@ -73,7 +73,19 @@ B_ADAPTED_LOAD=PASS
 GENERALIZED_ADAPTER=QUALIFIED_FOR_CORRECTNESS
 ```
 
-The exact historical adapter source/patch bytes have not yet been recovered into this fork. See `../../patches/joseph/checkpoint-nvfp4-spark/README.md`. The SHA256 above is retained as the identity gate for recovering the exact artifact rather than recreating it from memory.
+The exact runtime overlay source has since been recovered from the 2026-09-29 evidence archive. The historical artifact was a complete read-only `model.py` overlay, not a literal `.patch` file. It is preserved at:
+
+```text
+../../patches/joseph/checkpoint-nvfp4-spark/exact-overlay/usr/local/lib/python3.12/dist-packages/vllm/models/glm5next/nvidia/model.py
+```
+
+Its recovered SHA256 is exactly the qualified adapter identity above:
+
+```text
+4f3d1462905f52a339c67dba73c61003d501e2e5f845167a1ff934c6679a1d43
+```
+
+See `../../patches/joseph/checkpoint-nvfp4-spark/README.md` for provenance and runtime-mount evidence.
 
 ## First correctness result after adaptation
 
