@@ -1,6 +1,6 @@
 # NVFP4-Spark checkpoint compatibility adaptation
 
-This directory is reserved for the exact compatibility patch/overlay used to run:
+This directory preserves the exact compatibility overlay used to run:
 
 `local-inference-lab/GLM-5.3-Flash-NVFP4-Spark`
 
@@ -12,6 +12,32 @@ on the RiNGSiDE TP2 runtime pinned at:
 
 `6606f7638aff044a8170e414818477679934a1c3`
 
+## Recovery status
+
+`RECOVERED_EXACT_RUNTIME_OVERLAY`
+
+The 2026-09-29 evidence archive was recovered and inspected. It does not contain a literal `.patch` or `.diff` for this adapter. The actual checkpoint-enablement artifact was a complete `model.py` file mounted read-only over the installed vLLM file on both ranks.
+
+Exact recovered artifact in this repository:
+
+```text
+exact-overlay/usr/local/lib/python3.12/dist-packages/vllm/models/glm5next/nvidia/model.py
+```
+
+Runtime mount target:
+
+```text
+/usr/local/lib/python3.12/dist-packages/vllm/models/glm5next/nvidia/model.py
+```
+
+Qualified SHA256:
+
+```text
+4f3d1462905f52a339c67dba73c61003d501e2e5f845167a1ff934c6679a1d43
+```
+
+The recovered file hashes to exactly the recorded qualified runtime identity above.
+
 ## Why an adaptation was required
 
 The target checkpoint initially failed to load with:
@@ -21,7 +47,7 @@ KeyError:
 layers.0.self_attn.in_proj_qkvbfg_a.weight_scale
 ```
 
-A generalized checkpoint-contract adapter was then used for the KDA / Indexer / MLA checkpoint-layout differences.
+The recovered generalized checkpoint-contract adapter handles the KDA / Indexer / MLA checkpoint-layout differences required by this checkpoint without importing the G3 runtime wholesale.
 
 Qualified receipts reported:
 
@@ -34,58 +60,56 @@ B_ADAPTED_LOAD=PASS
 GENERALIZED_ADAPTER=QUALIFIED_FOR_CORRECTNESS
 ```
 
-The final adapter deployed to both ranks had SHA256:
+## Proof that this exact file was used
+
+The archived launch contract describes a single read-only bind mount of this `model.py`.
+
+Both rank-specific compose overrides used the same host source and the same runtime target. The archived prelaunch parity and parity-qualified load receipts recorded:
 
 ```text
-4f3d1462905f52a339c67dba73c61003d501e2e5f845167a1ff934c6679a1d43
-```
-
-Parity gates also passed:
-
-```text
-PRELAUNCH_OVERLAY_PARITY=PASS
+ADAPTER_SHA256_RANK0=4f3d1462905f52a339c67dba73c61003d501e2e5f845167a1ff934c6679a1d43
+ADAPTER_SHA256_RANK1=4f3d1462905f52a339c67dba73c61003d501e2e5f845167a1ff934c6679a1d43
 ADAPTER_HASH_MATCH=YES
-IMAGE_DIGEST_MATCH=YES
+MODEL_PY_RUNTIME_SHA256_RANK0=4f3d1462905f52a339c67dba73c61003d501e2e5f845167a1ff934c6679a1d43
+MODEL_PY_RUNTIME_SHA256_RANK1=4f3d1462905f52a339c67dba73c61003d501e2e5f845167a1ff934c6679a1d43
 IMPORT_PATH_MATCH=YES
+OVERLAY_MOUNT_MATCH=YES
+PRELAUNCH_OVERLAY_PARITY=PASS
 ```
 
-## Current recovery status
+The archived launch labels identify the adapter as:
 
-`PATCH_BYTES_NOT_RECOVERED`
+```text
+ringside.tp2.adapter=generalized-mxfp8-checkpoint-contract
+```
 
-The historical records currently available to this repository preserve the adapter identity, purpose, and qualification results, but not the complete source/patch bytes.
+## Historical evidence source
 
-Do **not** recreate a patch from memory and label it as the historical qualified adapter.
-
-The exact artifact should be recovered from the DGX evidence/worktree and accepted here only if its SHA256 and provenance match the recorded qualified artifact.
-
-Primary historical evidence location:
+Recovered from the user-supplied archive of:
 
 ```text
 /home/joseph/ai/projects/glm53-ringside-tp2-evidence/
 b-adapted-20260929/
 ```
 
-Formal comparison report:
+Relevant archived files include:
 
 ```text
+overlay/usr/local/lib/python3.12/dist-packages/vllm/models/glm5next/nvidia/model.py
+launch/LAUNCH_CONTRACT.md
+launch/rank0/compose.override.yaml
+launch/rank1/compose.override.yaml
+contracts/prelaunch-overlay-parity.txt
+logs/B_ADAPTED_PARITY_LOAD_GATE.txt
 PHASE_A_VS_B_ADAPTED_FINAL.md
+report/B_ADAPTER_REPORT.md
 ```
 
-## Recovery gate
+## Artifact type
 
-When the exact patch/source is recovered, record at minimum:
+This was an **overlay source replacement**, not a standalone patch file. Do not rewrite the historical record to imply that a `.patch` existed at qualification time.
 
-1. original filesystem path;
-2. source/import path used by rank0 and rank1;
-3. SHA256;
-4. diff against upstream RiNGSiDE `6606f763...` source;
-5. affected runtime files;
-6. whether it is an overlay, direct source replacement, or generated adaptation;
-7. proof that rank0 and rank1 use identical bytes;
-8. the correctness receipt tied to that exact artifact.
-
-Only after those checks should the real patch files be added beside this README.
+A derived diff against the exact RiNGSiDE preimage may be generated later for review convenience, but such a derived diff must be labelled as derived and must not replace this exact recovered runtime artifact as the authoritative historical bytes.
 
 ## Non-goal
 
